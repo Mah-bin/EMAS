@@ -5,12 +5,13 @@ const CitizenReportsPanel = ({ selectedCity }) => {
   const [statistics, setStatistics] = useState(null);
   const [filter, setFilter] = useState('all'); // 'all', 'pending', 'validated'
   const [loading, setLoading] = useState(true);
+  const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
   const fetchReports = async () => {
     try {
       const status = filter === 'all' ? '' : filter;
       const response = await fetch(
-        `http://localhost:8000/api/citizen/reports?location=${selectedCity}&status=${status}&limit=10`
+        `${API_BASE_URL}/api/citizen/reports?location=${selectedCity}&status=${status}&limit=10`
       );
       const data = await response.json();
       setReports(data.reports || []);
@@ -22,7 +23,7 @@ const CitizenReportsPanel = ({ selectedCity }) => {
   const fetchStatistics = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/api/citizen/statistics?location=${selectedCity}`
+        `${API_BASE_URL}/api/citizen/statistics?location=${selectedCity}`
       );
       const data = await response.json();
       setStatistics(data.statistics);
@@ -43,7 +44,7 @@ const CitizenReportsPanel = ({ selectedCity }) => {
   const handleVote = async (reportId, upvote) => {
     try {
       await fetch(
-        `http://localhost:8000/api/citizen/report/${reportId}/vote?upvote=${upvote}`,
+        `${API_BASE_URL}/api/citizen/report/${reportId}/vote?upvote=${upvote}`,
         { method: 'POST' }
       );
       fetchReports(); // Refresh reports

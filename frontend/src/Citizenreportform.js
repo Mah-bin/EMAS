@@ -13,6 +13,7 @@ const CitizenReportForm = ({ selectedCity, onClose, onSubmitSuccess }) => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
   const reportTypes = [
     { value: 'smoke', label: '💨 Smoke', icon: '💨' },
