@@ -23,14 +23,20 @@ def get_city_state(city):
             'pm25': random.uniform(25, 35),      # Start in "Moderate" range
             'noise': random.uniform(55, 65),     # Start in "Normal" range
             'wind': 12.0,
-            # Trend Tracking
-            'pm25_target': 30.0,                 # We now drift towards a 'Target'
-            'trend_duration': 0
+            # Trend Tracking - NOW WITH MORE MOVEMENT
+            'pm25_target': 30.0,
+            'noise_target': 60.0,
+            'wind_target': 12.0,
+            'trend_duration': 0,
+            'update_count': 0  # Track updates for periodic shifts
         }
     return _city_states[city]
 
 def fetch_environmental_data(city="Thiruvananthapuram"):
     state = get_city_state(city)
+    
+    # Increment update counter
+    state['update_count'] += 1
     
     data = {
         "location": city,
@@ -58,80 +64,119 @@ def fetch_environmental_data(city="Thiruvananthapuram"):
         except Exception as e:
             print(f"Weather API Error: {e}")
 
-    # --- SMOOTH DYNAMIC DATA ---
-    # We generate values that 'drift' rather than 'jump'
+    # --- SMOOTH BUT VISIBLE DYNAMIC DATA ---
     data['wind_kph'] = generate_smooth_wind(state)
     data['pm25'] = generate_smooth_pm25(state)
     data['noise'] = generate_smooth_noise(state)
     
     return data
 
-# --- SMOOTH GENERATORS (Fixes the Risk Score Jumps) ---
+# --- ENHANCED SMOOTH GENERATORS (More Visible Changes) ---
 
 def generate_smooth_pm25(state):
     """
-    Gradually drifts PM2.5 towards a target value.
-    Prevents instant 10->50 jumps.
+    Gradually drifts PM2.5 with MORE VISIBLE changes.
+    Creates clear upward/downward trends for the chart.
     """
-    # 1. Pick a new target if we reached the old one or time is up
-    if state['trend_duration'] <= 0 or abs(state['pm25'] - state['pm25_target']) < 1:
-        # Pick a target between 15 (Clean) and 80 (Polluted)
-        state['pm25_target'] = random.uniform(15, 80)
-        # Take 10-20 updates to get there (Slow drift)
-        state['trend_duration'] = random.randint(10, 20)
+    # 1. Create periodic "events" every 6-10 updates (30-50 seconds)
+    if state['trend_duration'] <= 0 or abs(state['pm25'] - state['pm25_target']) < 2:
+        # Pick a more dramatic target for visible change
+        current_hour = datetime.now().hour
+        
+        # Time-based patterns for realism
+        if 7 <= current_hour <= 9 or 17 <= current_hour <= 19:
+            # Rush hour - higher pollution
+            state['pm25_target'] = random.uniform(40, 70)
+        elif 22 <= current_hour or current_hour <= 5:
+            # Night - lower pollution
+            state['pm25_target'] = random.uniform(15, 30)
+        else:
+            # Normal day - varied
+            state['pm25_target'] = random.uniform(25, 50)
+        
+        # Take 6-10 updates to reach target (visible trend on chart)
+        state['trend_duration'] = random.randint(6, 10)
     
     state['trend_duration'] -= 1
     
-    # 2. Smoothly move 5% of the way to the target per update
-    # This creates a realistic curve
+    # 2. Move 15% of the way to target (INCREASED from 5%)
+    # This creates visible trends on the chart
     current = state['pm25']
     target = state['pm25_target']
     
-    new_val = current + (target - current) * 0.05
+    step_size = (target - current) * 0.15
+    new_val = current + step_size
     
-    # Add tiny jitter (breathing effect) so it's not robotic
-    new_val += random.uniform(-0.5, 0.5)
+    # 3. Add visible jitter (INCREASED from ±0.5 to ±2)
+    # This prevents flat lines between major changes
+    new_val += random.uniform(-2, 2)
     
-    state['pm25'] = max(5, min(300, new_val))
+    # 4. Occasional spike events (pollution incidents)
+    if random.random() < 0.05:  # 5% chance per update
+        spike = random.uniform(5, 15)
+        new_val += spike
+        print(f"💨 Pollution spike in {state.get('city', 'city')}: +{spike:.1f} PM2.5")
+    
+    state['pm25'] = max(5, min(150, new_val))
     return round(state['pm25'], 1)
 
 def generate_smooth_wind(state):
     """
-    Wind changes slowly, with occasional gusts that fade out.
+    Wind with MORE VISIBLE changes and periodic gusts.
     """
-    # Small random drift
-    change = random.uniform(-0.5, 0.5)
+    # Create wind pattern every 8-12 updates
+    if state['update_count'] % random.randint(8, 12) == 0:
+        state['wind_target'] = random.uniform(5, 25)
     
-    # Gust event (Smooth rise)
-    target = state['wind'] + change
+    # Move 20% towards target (INCREASED from 10%)
+    current = state['wind']
+    target = state['wind_target']
     
-    # Apply smoothing (Inertia)
-    state['wind'] = (state['wind'] * 0.9) + (target * 0.1)
+    step = (target - current) * 0.20
+    new_val = current + step
     
-    # Physics check
-    state['wind'] = max(2, min(40, state['wind']))
+    # Add visible variation (±1.5 instead of ±0.5)
+    new_val += random.uniform(-1.5, 1.5)
+    
+    # Occasional gusts
+    if random.random() < 0.08:  # 8% chance
+        gust = random.uniform(5, 10)
+        new_val += gust
+        print(f"💨 Wind gust: +{gust:.1f} km/h")
+    
+    state['wind'] = max(2, min(40, new_val))
     return round(state['wind'], 1)
 
 def generate_smooth_noise(state):
     """
-    Noise is naturally jumpy, but we dampen the jump size 
-    so the Risk Score doesn't panic.
+    Noise with MORE VISIBLE fluctuations.
+    Creates clear peaks and valleys on the chart.
     """
-    # Base fluctuation is small (±1 dB)
-    change = random.uniform(-1, 1)
+    # Create noise pattern every 5-8 updates
+    if state['update_count'] % random.randint(5, 8) == 0:
+        # Pick new base level
+        current_hour = datetime.now().hour
+        if 8 <= current_hour <= 20:
+            state['noise_target'] = random.uniform(58, 72)  # Daytime
+        else:
+            state['noise_target'] = random.uniform(45, 55)  # Nighttime
     
-    # Occasional car pass (Smooth spike)
-    if random.random() < 0.15:
-        change += random.uniform(2, 4) # Reduced from 15 to 4
-        
-    new_val = state['noise'] + change
+    # Move 25% towards target (INCREASED from implied 5%)
+    current = state['noise']
+    target = state['noise_target']
     
-    # Pull back to 'Base Noise Level' (e.g., 60dB)
-    # This prevents it from drifting to 100dB forever
-    base_level = 60
-    new_val = new_val * 0.95 + base_level * 0.05
+    step = (target - current) * 0.25
+    new_val = current + step
     
-    state['noise'] = max(40, min(85, new_val))
+    # Add visible jitter (±2 instead of ±1)
+    new_val += random.uniform(-2, 2)
+    
+    # Traffic/Activity spikes (more frequent)
+    if random.random() < 0.12:  # 12% chance (increased from implied 15%)
+        spike = random.uniform(5, 12)  # Visible spike
+        new_val += spike
+    
+    state['noise'] = max(40, min(90, new_val))
     return int(state['noise'])
 
 # --- MAP ENRICHMENT ---
@@ -181,7 +226,7 @@ def enrich_sensor_network(sensors_list):
         sensor["temp"] = baseline.get("temp_c", 30)
         sensor["wind_kph"] = baseline.get("wind_kph", 10)
         
-        # Updated Status Logic (Matches Smoothing)
+        # Updated Status Logic
         sensor["status"] = "active"
         if sensor["pm25"] > 60: sensor["status"] = "Warning"
         if sensor["pm25"] > 100: sensor["status"] = "Critical"
