@@ -1,0 +1,19 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.local
+
+# OS
+Thumbs.db
+.DS_Store
+# React build
+frontend/build/
+
+

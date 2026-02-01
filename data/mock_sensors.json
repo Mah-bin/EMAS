@@ -1,0 +1,156 @@
+[
+  {
+    "id": "tvm_01",
+    "name": "KINFRA Film & Video Park",
+    "location": "Thiruvananthapuram",
+    "lat": 8.5862, "lng": 76.8778,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "tvm_02",
+    "name": "Technopark Phase 3",
+    "location": "Thiruvananthapuram",
+    "lat": 8.5456, "lng": 76.8821,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "tvm_03",
+    "name": "Veli Industrial Area",
+    "location": "Thiruvananthapuram",
+    "lat": 8.5133, "lng": 76.8922,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "klm_01",
+    "name": "Cashew Export Zone",
+    "location": "Kollam",
+    "lat": 8.8932, "lng": 76.6141,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "klm_02",
+    "name": "Kollam Port Area",
+    "location": "Kollam",
+    "lat": 8.8778, "lng": 76.5818,
+    "type": "traffic", "status": "active"
+  },
+  {
+    "id": "klm_03",
+    "name": "Asramam Adventure Park",
+    "location": "Kollam",
+    "lat": 8.9042, "lng": 76.5770,
+    "type": "environmental", "status": "active"
+  },
+  {
+    "id": "pta_01",
+    "name": "Adoor Industrial Estate",
+    "location": "Pathanamthitta",
+    "lat": 9.1528, "lng": 76.7356,
+    "type": "industrial", "status": "maintenance"
+  },
+  {
+    "id": "pta_02",
+    "name": "Konni Eco Zone",
+    "location": "Pathanamthitta",
+    "lat": 9.2392, "lng": 76.8378,
+    "type": "environmental", "status": "active"
+  },
+  {
+    "id": "alp_01",
+    "name": "Aroor Seafood Park",
+    "location": "Alappuzha",
+    "lat": 9.8732, "lng": 76.3024,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "alp_02",
+    "name": "Kuttanad Rice Research",
+    "location": "Alappuzha",
+    "lat": 9.4237, "lng": 76.4719,
+    "type": "environmental", "status": "active"
+  },
+  {
+    "id": "alp_03",
+    "name": "Coir Park",
+    "location": "Alappuzha",
+    "lat": 9.4981, "lng": 76.3388,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "ekm_01",
+    "name": "Kakkanad InfoPark",
+    "location": "Ernakulam",
+    "lat": 10.0163, "lng": 76.3562,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "ekm_02",
+    "name": "Cochin Shipyard",
+    "location": "Ernakulam",
+    "lat": 9.9546, "lng": 76.2874,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "ekm_03",
+    "name": "MG Road Traffic",
+    "location": "Ernakulam",
+    "lat": 9.9723, "lng": 76.2796,
+    "type": "traffic", "status": "active"
+  },
+  {
+    "id": "tcr_01",
+    "name": "Koratty InfoPark",
+    "location": "Thrissur",
+    "lat": 10.2690, "lng": 76.3540,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "tcr_02",
+    "name": "Swaraj Round",
+    "location": "Thrissur",
+    "lat": 10.5276, "lng": 76.2144,
+    "type": "traffic", "status": "active"
+  },
+  {
+    "id": "pkd_01",
+    "name": "Kanjikode Industrial Area",
+    "location": "Palakkad",
+    "lat": 10.7867, "lng": 76.6548,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "pkd_02",
+    "name": "Walayar Checkpost",
+    "location": "Palakkad",
+    "lat": 10.8465, "lng": 76.8687,
+    "type": "traffic", "status": "active"
+  },
+  {
+    "id": "knr_01",
+    "name": "KINFRA Textile Park",
+    "location": "Kannur",
+    "lat": 11.9542, "lng": 75.4674,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "knr_02",
+    "name": "Kannur Intl Airport",
+    "location": "Kannur",
+    "lat": 11.9142, "lng": 75.5471,
+    "type": "traffic", "status": "active"
+  },
+  {
+    "id": "ksd_01",
+    "name": "Seethangoli Industrial Park",
+    "location": "Kasaragod",
+    "lat": 12.5640, "lng": 75.0210,
+    "type": "industrial", "status": "active"
+  },
+  {
+    "id": "ksd_02",
+    "name": "Bekal Fort Zone",
+    "location": "Kasaragod",
+    "lat": 12.3839, "lng": 75.0326,
+    "type": "environmental", "status": "active"
+  }
+]
