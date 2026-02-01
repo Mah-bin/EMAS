@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -63,10 +63,14 @@ function App() {
   const [error, setError] = useState(null);
   const [timeline, setTimeline] = useState([]);
   const [predictions, setPredictions] = useState([]);
+  const [chartKey, setChartKey] = useState(0); // Force chart re-render
   
   // Citizen Participation State
   const [showReportForm, setShowReportForm] = useState(false);
-  const [showCitizenPanel, setShowCitizenPanel] = useState(false); // Controls the new Popup
+  const [showCitizenPanel, setShowCitizenPanel] = useState(false);
+  
+  // Use ref to track previous data
+  const prevHistoryRef = useRef();
 
   // Fetch monitor data from backend (Dynamic City)
   const fetchMonitorData = async () => {
@@ -89,13 +93,37 @@ function App() {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/history?limit=24`);
       if (!response.ok) throw new Error('History fetch failed');
       const data = await response.json();
-      console.log('History data received:', data);
-      console.log('Number of history records:', data.data?.length);
-      if (data.data && data.data.length > 0) {
-        console.log('Latest record:', data.data[0]);
-        console.log('Oldest record:', data.data[data.data.length - 1]);
+      
+      const newData = data.data || [];
+      console.log('📊 History fetch:', {
+        count: newData.length,
+        latestPM25: newData[0]?.pm25,
+        latestNoise: newData[0]?.noise,
+        latestTimestamp: newData[0]?.timestamp
+      });
+      
+      // Check if data actually changed
+      if (prevHistoryRef.current) {
+        const oldLatest = prevHistoryRef.current[0];
+        const newLatest = newData[0];
+        
+        if (oldLatest && newLatest) {
+          const changed = oldLatest.timestamp !== newLatest.timestamp ||
+                         oldLatest.pm25 !== newLatest.pm25 ||
+                         oldLatest.noise !== newLatest.noise;
+          
+          if (changed) {
+            console.log('✅ NEW DATA DETECTED - Chart will update');
+            setChartKey(prev => prev + 1); // Force chart refresh
+          } else {
+            console.log('⚠️  Data unchanged - same as before');
+          }
+        }
       }
-      setHistoryData(data.data || []);
+      
+      prevHistoryRef.current = newData;
+      setHistoryData(newData);
+      
     } catch (err) {
       console.error('History fetch error:', err);
     }
@@ -200,10 +228,9 @@ function App() {
   };
 
   // --- 2. UPDATED USE EFFECT ---
-  // Initial load and periodic refresh - Triggers when CITY changes
   useEffect(() => {
     const loadData = async () => {
-      console.log(`Loading data for ${selectedCity}...`);
+      console.log(`🔄 Loading data for ${selectedCity}...`);
       setLoading(true);
       await fetchMonitorData();
       await fetchHistory();
@@ -215,6 +242,7 @@ function App() {
     loadData();
 
     const fastInterval = setInterval(() => {
+      console.log('⏰ 5-second refresh triggered');
       fetchMonitorData();
       fetchHistory();
       fetchCorrelations();
@@ -246,16 +274,6 @@ function App() {
       }
     }
   }, [monitorData?.risk_assessment?.alerts]);
-
-  // Debug: Log when history data updates
-  useEffect(() => {
-    console.log('📊 Chart data updated:', {
-      dataPoints: historyData.length,
-      latestPM25: historyData[0]?.pm25,
-      latestNoise: historyData[0]?.noise,
-      latestWind: historyData[0]?.wind_kph
-    });
-  }, [historyData]);
 
   const getStatus = (val, thresholds) => {
     if (val <= thresholds[0]) return { text: 'Safe', class: 'safe' };
@@ -296,7 +314,7 @@ function App() {
   const current = monitorData.current || {};
   const risk = monitorData.risk_assessment || { score: 0, level: 'Low', alerts: [] };
   
-  // Chart Configuration
+  // Chart Configuration - Create fresh data object each time
   const chartData = {
     labels: historyData.slice().reverse().map(d => {
       const date = new Date(d.timestamp);
@@ -309,7 +327,10 @@ function App() {
         borderColor: '#ef4444',
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
         fill: true,
-        tension: 0.4
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5
       },
       {
         label: 'Wind (km/h)',
@@ -317,7 +338,10 @@ function App() {
         borderColor: '#3b82f6',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         fill: true,
-        tension: 0.4
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5
       },
       {
         label: 'Noise (dB)',
@@ -325,7 +349,10 @@ function App() {
         borderColor: '#f59e0b',
         backgroundColor: 'rgba(245, 158, 11, 0.1)',
         fill: true,
-        tension: 0.4
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5
       }
     ]
   };
@@ -335,23 +362,45 @@ function App() {
     maintainAspectRatio: false,
     animation: {
       duration: 750,
+      easing: 'easeInOutQuart'
     },
     plugins: {
       legend: { 
         labels: { 
           color: '#e5e7eb', 
-          font: { family: 'JetBrains Mono' } 
+          font: { family: 'JetBrains Mono', size: 12 },
+          usePointStyle: true,
+          padding: 15
         } 
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+        titleColor: '#e5e7eb',
+        bodyColor: '#e5e7eb',
+        borderColor: '#374151',
+        borderWidth: 1
       }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
     },
     scales: {
       y: { 
         grid: { color: 'rgba(255, 255, 255, 0.1)' }, 
-        ticks: { color: '#9ca3af' } 
+        ticks: { color: '#9ca3af', font: { size: 11 } }
       },
       x: { 
         grid: { display: false }, 
-        ticks: { color: '#9ca3af', maxRotation: 45, minRotation: 45 } 
+        ticks: { 
+          color: '#9ca3af', 
+          maxRotation: 45, 
+          minRotation: 45,
+          font: { size: 10 }
+        } 
       }
     }
   };
@@ -417,7 +466,7 @@ function App() {
               🗣️ Report Issue
             </button>
             <button
-              onClick={() => setShowCitizenPanel(true)} // Open Popup
+              onClick={() => setShowCitizenPanel(true)}
               style={{
                 padding: '10px 20px',
                 background: showCitizenPanel ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.1)',
@@ -616,15 +665,16 @@ function App() {
           <div className="section-header">
             <h2 className="section-title">📊 Live Trends</h2>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              {historyData.length} data points • Updates every 5s
+              {historyData.length} points • {chartKey} updates
             </span>
           </div>
           <div style={{ height: '350px' }}>
             {historyData.length > 0 ? (
               <Line 
-                key={`chart-${historyData.length}-${historyData[0]?.timestamp}`} 
+                key={chartKey}
                 options={chartOptions} 
                 data={chartData} 
+                redraw={true}
               />
             ) : (
               <div style={{ textAlign: 'center', paddingTop: '120px' }}>
